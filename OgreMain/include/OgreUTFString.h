@@ -38,11 +38,14 @@
 #include <string>
 #include <stdexcept>
 
-#if defined(__EMSCRIPTEN__)
+#if defined(__EMSCRIPTEN__) && !defined(WASM_CHAR_TRAITS_DEFINED)
 // libc++ (emscripten) only specializes std::char_traits for char/wchar_t/
 // char8_t/char16_t/char32_t. OgreUTFString uses std::basic_string<uint16>
 // (data string) and std::basic_string<uint32> (UTF-32), i.e. unsigned short
 // and unsigned int, so we must provide those char_traits specializations.
+// Shared guard with MyGUI's identical patch so a TU including both headers
+// does not double-define.
+#define WASM_CHAR_TRAITS_DEFINED
 #include <cstring>
 #include <cwchar>
 #define OGRE_DEFINE_CHAR_TRAITS(CT, ITYPE)                                                       \
