@@ -18,3 +18,6 @@ cmake-build-*/
 
 # Ignore vim files
 *.swp
+
+# wasm port build dir
+build-emscripten/
