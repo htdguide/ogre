@@ -51,19 +51,19 @@ namespace Ogre {
           mMSAA(0),
           mCSAA(0)
     {
-        // already handled by resize
-        //emscripten_set_fullscreenchange_callback(NULL, (void*)this, 1, &EmscriptenEGLWindow::fullscreenCallback);
-        emscripten_set_webglcontextlost_callback(NULL, (void*)this, 1, &EmscriptenEGLWindow::contextLostCallback);
-        emscripten_set_webglcontextrestored_callback(NULL, (void*)this, 1, &EmscriptenEGLWindow::contextRestoredCallback);
-        emscripten_set_resize_callback(NULL, (void*)this, 1, &EmscriptenEGLWindow::canvasWindowResized);
+        // Newer emscripten rejects a NULL event target (it ends up as
+        // querySelector("0") -> SyntaxError). Use explicit targets: the canvas
+        // for WebGL context-loss events and the window for resize.
+        emscripten_set_webglcontextlost_callback("#canvas", (void*)this, 1, &EmscriptenEGLWindow::contextLostCallback);
+        emscripten_set_webglcontextrestored_callback("#canvas", (void*)this, 1, &EmscriptenEGLWindow::contextRestoredCallback);
+        emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, (void*)this, 1, &EmscriptenEGLWindow::canvasWindowResized);
     }
 
     EmscriptenEGLWindow::~EmscriptenEGLWindow()
     {
-        emscripten_set_fullscreenchange_callback(NULL, NULL, 0, NULL);
-        emscripten_set_resize_callback(NULL, NULL, 0, NULL);
-        emscripten_set_webglcontextlost_callback(NULL, NULL, 0, NULL);
-        emscripten_set_webglcontextrestored_callback(NULL, NULL, 0, NULL);
+        emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, 0, NULL);
+        emscripten_set_webglcontextlost_callback("#canvas", NULL, 0, NULL);
+        emscripten_set_webglcontextrestored_callback("#canvas", NULL, 0, NULL);
     }
 
     void EmscriptenEGLWindow::getLeftAndTopFromNativeWindow( int & left, int & top, uint width, uint height )
