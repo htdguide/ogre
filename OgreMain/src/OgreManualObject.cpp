@@ -151,6 +151,14 @@ namespace Ogre {
         // Check that a valid material was provided
         MaterialPtr material = MaterialManager::getSingleton().getByName(materialName, groupName);
 
+#ifdef __EMSCRIPTEN__
+        // Cross-group material lookup (see OgreSubEntity.cpp): retry across all
+        // groups so objects can use base/managed materials that compiled into a
+        // different resource group.
+        if (!material && groupName != ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME)
+            material = MaterialManager::getSingleton().getByName(materialName, ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
+#endif
+
         if( !material )
         {
             LogManager::getSingleton().logMessage("Can't assign material " + materialName +

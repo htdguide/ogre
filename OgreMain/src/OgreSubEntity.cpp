@@ -63,6 +63,16 @@ namespace Ogre {
     {
         MaterialPtr material = MaterialManager::getSingleton().getByName(name, groupName);
 
+#ifdef __EMSCRIPTEN__
+        // Cross-group material lookup. RoR's base/managed materials (hangar,
+        // traffic lights, signs, roads, ...) compile into MaterialsRG, but the
+        // meshes that use them live in another group (a mod bundle, MeshesRG, ...).
+        // getByName scoped to the mesh's group then misses them -> white default
+        // material. Retry across all groups.
+        if (!material && groupName != ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME)
+            material = MaterialManager::getSingleton().getByName(name, ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
+#endif
+
         if( !material )
         {
             LogManager::getSingleton().logMessage("Can't assign material '" + name +
