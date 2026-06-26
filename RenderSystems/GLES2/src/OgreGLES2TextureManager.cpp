@@ -80,6 +80,17 @@ namespace Ogre {
             return PF_BYTE_RGBA;
         }
 
+#ifdef __EMSCRIPTEN__
+        // WebGL2 has no BGRA extension (GL_BGRA_EXT), but the format table maps
+        // PF_A8R8G8B8 / PF_X8R8G8B8 / PF_B8G8R8A8 to it, so such textures (e.g.
+        // uncompressed DDS like the character skin) upload as black. Force them
+        // to RGBA so Ogre converts the pixel data on load.
+        if (GLES2PixelUtil::getGLOriginFormat(format) == GL_BGRA_EXT)
+        {
+            return PF_BYTE_RGBA;
+        }
+#endif
+
         // Check if this is a valid rendertarget format
         if (usage & TU_RENDERTARGET)
         {
